@@ -114,12 +114,26 @@ export const updateOnDutyStatus = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-// Get All On-Duty Forms
 export const getAllOnDutyForms = async (req, res) => {
     try {
-        const allOnDutyForms = await OnDutyFormModel.find();
-        res.status(200).json(allOnDutyForms);
+        const currentUser = req.user; // Assuming the user info is stored in req.user
+
+        let onDutyForms;
+
+        if (currentUser.role === "admin") {
+            // If the user is staff, return all On-Duty forms
+            onDutyForms = await OnDutyFormModel.find();
+        } else if (currentUser.role === "head") {
+            // If the user is head, return only the forms that have been approved by staff (status = "Processing")
+            onDutyForms = await OnDutyFormModel.find({ status: "Processing" });
+        } else {
+            // If the user is neither staff nor head, return an error
+            return res
+                .status(403)
+                .json({ message: "Unauthorized to view the On-Duty forms" });
+        }
+
+        res.status(200).json(onDutyForms);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
