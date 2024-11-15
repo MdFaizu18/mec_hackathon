@@ -1,7 +1,5 @@
 import OnDutyFormModel from "../models/onDutyModel.js";
 import NotificationModel from "../models/notificationModel.js";
-
-// Create On-Duty Form
 export const createOnDutyForm = async (req, res) => {
     try {
         const {
@@ -14,6 +12,34 @@ export const createOnDutyForm = async (req, res) => {
             dateTo,
             contactNumber,
         } = req.body;
+
+        // Check if all fields are provided
+        if (!studentName || !studentId || !course || !semester || !reason || !dateFrom || !dateTo || !contactNumber) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        // Validate date format (yyyy-mm-dd)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(dateFrom) || !dateRegex.test(dateTo)) {
+            return res.status(400).json({ error: 'Dates must be in yyyy-mm-dd format.' });
+        }
+
+        // Parse dates and validate logical order
+        const fromDate = new Date(dateFrom);
+        const toDate = new Date(dateTo);
+
+        if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+            return res.status(400).json({ error: 'Invalid date values provided.' });
+        }
+
+        if (fromDate >= toDate) {
+            return res.status(400).json({ error: 'dateFrom must be earlier than dateTo.' });
+        }
+
+        // Validate contact number
+        if (!/^\d{10}$/.test(contactNumber)) {
+            return res.status(400).json({ error: 'Contact number must be a valid 10-digit number.' });
+        }
 
         // Create the On-Duty form
         const newOnDutyForm = await OnDutyFormModel.create({
@@ -36,7 +62,8 @@ export const createOnDutyForm = async (req, res) => {
 
         res.status(201).json(newOnDutyForm);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 

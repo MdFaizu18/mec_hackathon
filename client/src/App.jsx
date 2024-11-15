@@ -11,6 +11,9 @@ import { action as registerAction } from './pages/RegisterPage'
 import StudentDashboard from './pages/StudentDashboard';
 import LandingPage from './pages/LandingPage';
 import StudentOutlet from './pages/StudentOutlet';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminOutlet from './pages/admin/AdminOutlet';
+import AdminOD from './pages/admin/AdminOD';
 
 
 // Define the router using createBrowserRouter
@@ -46,6 +49,20 @@ const router = createBrowserRouter([
       },
     ]
   },
+  {
+    path: 'admin-dashboard',
+    element: <AdminOutlet />,
+    children: [
+      {
+        index: true,
+        element: <AdminDashboard />,
+      },
+      {
+        path: 'od-notify',
+        element: <AdminOD />,
+      },
+    ]
+  }
 ]);
 
 const App = () => {

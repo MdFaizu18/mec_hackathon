@@ -1,75 +1,77 @@
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import React, { useState } from 'react'
-import { X } from 'lucide-react'
-import { Form } from 'react-router-dom'
-import customFetch from '../utils/CustomFetch'
-import axios from 'axios';
+import { X } from 'lucide-react';
+import customFetch from '../utils/CustomFetch';
 
 const OndutyDrawer = ({ isOpen, onClose }) => {
-    const [formData, setFormData] = useState({
-        studentName: '',
-        studentId: '',
-        course: '',
-        semester: '',
-        contactNumber: '',
-        dateFrom: '',
-        dateTo: '',
-        reason: ''
-    })
+    const [currentUser, setCurrentUser] = useState(null);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setFormData((prevData) => ({ ...prevData, [name]: value }))
-    }
+    // Form states
+    const [studentName, setStudentName] = useState('');
+    const [studentId, setStudentId] = useState('');
+    const [course, setCourse] = useState('');
+    const [semester, setSemester] = useState('');
+    const [contactNumber, setContactNumber] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [reason, setReason] = useState('');
 
+    // Fetch current user
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await customFetch.get('/dashboard-student/current-user');
+                const user = response.data.user;
+
+                setCurrentUser(user);
+                setStudentName(user?.name || '');
+                setStudentId(user?.registerNo || '');
+                setCourse(user?.department || '');
+            } catch (error) {
+                console.error('Failed to fetch current user:', error);
+                toast.error('Unable to fetch user data');
+            }
+        };
+
+        fetchCurrentUser();
+    }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         try {
             const data = {
-                studentName: formData.studentName,
-                studentId: formData.studentId,
-                course: formData.course,
-                semester: formData.semester,
-                contactNumber: formData.contactNumber,
-                dateFrom: formData.dateFrom,
-                dateTo: formData.dateTo,
-                reason: formData.reason,
+                studentName,
+                studentId,
+                course,
+                semester,
+                contactNumber,
+                dateFrom,
+                dateTo,
+                reason,
             };
 
-            const response = await axios.post('/api/v1/student/on-duty', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            console.log("Data sent to server:", data);
 
-            console.log('API Response:', response); // Debugging
-            if (response.status === 200) {
-                toast.success('On-duty request submitted successfully!');
-                setFormData({
-                    studentName: '',
-                    studentId: '',
-                    course: '',
-                    semester: '',
-                    contactNumber: '',
-                    dateFrom: '',
-                    dateTo: '',
-                    reason: '',
-                });
-                onClose();
-            } else {
-                throw new Error('Unexpected response from server.');
-            }
+            await customFetch.post('/student/on-duty', data);
+            toast.success("Permission submitted successfully");
+            onClose();
         } catch (error) {
-            console.error('Error:', error.response || error.message); // Debugging
+            console.error('Error:', error.response || error.message);
             toast.error(error.response?.data?.msg || 'Failed to submit on-duty request');
         }
     };
 
-
-
-
+    if (!currentUser) {
+        // Render a loading indicator while `currentUser` is being fetched
+        return (
+            <div className={`fixed inset-y-0 right-0 w-full sm:w-2/5 bg-gray-50 shadow-lg transform transition-transform duration-300 ease-in-out z-50`}>
+                <div className="p-6 flex justify-center items-center h-full">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`fixed inset-y-0 right-0 w-full sm:w-2/5 bg-gray-50 shadow-lg transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out z-50`}>
@@ -82,129 +84,114 @@ const OndutyDrawer = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Form */}
-                <Form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Name Field */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Student Name */}
                     <div>
-                        <label htmlFor="studentName" className="block text-sm font-medium text-gray-700">
-                            Student Name
-                        </label>
+                        <label htmlFor="studentName" className="block text-sm font-medium text-gray-700">Student Name</label>
                         <input
                             type="text"
                             id="studentName"
-                            name="studentName"
-                            value={formData.studentName}
-                            onChange={handleInputChange}
+                            value={studentName}
+                            onChange={(e) => setStudentName(e.target.value)}
                             required
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                     </div>
 
-                    {/* Student ID Field */}
+                    {/* Student ID */}
                     <div>
-                        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
-                            Student ID
-                        </label>
+                        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">Register No</label>
                         <input
                             type="text"
                             id="studentId"
-                            name="studentId"
-                            value={formData.studentId}
-                            onChange={handleInputChange}
+                            value={studentId}
+                            onChange={(e) => setStudentId(e.target.value)}
                             required
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                     </div>
 
-                    {/* Course Field */}
+                    {/* Course */}
                     <div>
-                        <label htmlFor="course" className="block text-sm font-medium text-gray-700">
-                            Course
-                        </label>
+                        <label htmlFor="course" className="block text-sm font-medium text-gray-700">Department</label>
                         <input
                             type="text"
                             id="course"
-                            name="course"
-                            value={formData.course}
-                            onChange={handleInputChange}
+                            value={course}
+                            onChange={(e) => setCourse(e.target.value)}
                             required
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                     </div>
 
-                    {/* Semester Field */}
+                    {/* Semester */}
                     <div>
-                        <label htmlFor="semester" className="block text-sm font-medium text-gray-700">
-                            Semester
-                        </label>
-                        <input
-                            type="text"
+                        <label htmlFor="semester" className="block text-sm font-medium text-gray-700">Semester</label>
+                        <select
                             id="semester"
-                            name="semester"
-                            value={formData.semester}
-                            onChange={handleInputChange}
+                            value={semester}
+                            onChange={(e) => setSemester(e.target.value)}
                             required
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        />
+                        >
+                            <option value="" disabled>Select Semester</option>
+                            {[...Array(8)].map((_, index) => (
+                                <option key={index + 1} value={index + 1}>
+                                    Semester {index + 1}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Contact Number Field */}
+                    {/* Contact Number */}
                     <div>
-                        <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">
-                            Contact Number
-                        </label>
+                        <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number</label>
                         <input
                             type="text"
                             id="contactNumber"
-                            name="contactNumber"
-                            value={formData.contactNumber}
-                            onChange={handleInputChange}
+                            value={contactNumber}
+                            onChange={(e) => setContactNumber(e.target.value)}
                             required
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Contact Number */}
+                   
 
                     {/* Date Range */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700">
-                                Date From
-                            </label>
+                            <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700">Date From</label>
                             <input
                                 type="date"
                                 id="dateFrom"
-                                name="dateFrom"
-                                value={formData.dateFrom}
-                                onChange={handleInputChange}
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
                                 required
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                         <div>
-                            <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700">
-                                Date To
-                            </label>
+                            <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700">Date To</label>
                             <input
                                 type="date"
                                 id="dateTo"
-                                name="dateTo"
-                                value={formData.dateTo}
-                                onChange={handleInputChange}
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.target.value)}
                                 required
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                     </div>
 
-                    {/* Reason Field */}
+                    {/* Reason */}
                     <div>
-                        <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
-                            Reason
-                        </label>
+                        <label htmlFor="reason" className="block text-sm font-medium text-gray-700">Reason</label>
                         <textarea
                             id="reason"
-                            name="reason"
-                            value={formData.reason}
-                            onChange={handleInputChange}
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
                             required
                             rows={4}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -220,10 +207,17 @@ const OndutyDrawer = ({ isOpen, onClose }) => {
                             Submit Request
                         </button>
                     </div>
-                </Form>
+                </form>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default OndutyDrawer
+export default OndutyDrawer;
+
+                  
+
+
+
+
+

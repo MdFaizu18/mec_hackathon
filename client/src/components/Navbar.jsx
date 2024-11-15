@@ -1,17 +1,45 @@
-import { useState } from 'react'
-import {
-    GraduationCap,
-    LogIn,
-    Menu,
-    UserPlus,
-    X,
-} from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { GraduationCap, LogIn, Menu, UserPlus, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Use this for navigation
+import axios from 'axios'; // Use axios for API calls
+import { toast } from 'react-toastify'; // Optional for notifications
+import customFetch from '../utils/CustomFetch';
 
 const Navbar = () => {
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null); // State to hold user data
+    const navigate = useNavigate(); // For navigation
 
+    // Toggle mobile menu
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    // Fetch current user
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await customFetch.get('/dashboard-student/current-user'); // Adjust API path if needed
+                setCurrentUser(response.data.user); // Assuming the API response has a "name" field
+            } catch (error) {
+                console.error('Failed to fetch current user:', error);
+                toast.error('Unable to fetch user data');
+            }
+        };
+
+        fetchCurrentUser();
+    }, []);
+    console.log(currentUser);
+
+    // Logout functionality
+    const handleLogout = async () => {
+        try {
+            await customFetch.get("/auth/logout");
+            toast.success("Logout Successful");
+            navigate("/");
+        } catch (error) {
+            toast.error(error?.response?.data?.msg);
+        }
     };
 
     return (
@@ -38,9 +66,12 @@ const Navbar = () => {
                     <div className="hidden sm:flex items-center space-x-4">
                         <button className="flex items-center px-4 py-2 text-sm text-gray-700 hover:text-gray-900">
                             <UserPlus className="h-4 w-4 mr-2" />
-                            User
+                            {currentUser?.name || 'User'} {/* Display user name or fallback */}
                         </button>
-                        <button className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
                             <LogIn className="h-4 w-4 mr-2" />
                             Logout
                         </button>
@@ -68,9 +99,12 @@ const Navbar = () => {
                             Notifications
                         </button>
                         <button className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded">
-                            User
+                            {currentUser || 'User'} {/* Display user name */}
                         </button>
-                        <button className="block w-full text-left px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded">
+                        <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded"
+                        >
                             Logout
                         </button>
                     </div>
