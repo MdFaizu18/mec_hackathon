@@ -1,6 +1,5 @@
 
 import User from "../models/userModel.js";
-import staffModel from "../models/staffModel.js";
 import { hassPassword, comparePassword } from "../utils/passwordUtils.js";
 import { createJWT } from "../utils/tokenUtils.js";
 import * as dotenv from "dotenv";
@@ -9,26 +8,35 @@ dotenv.config();
 // ---------------------- for user registration -------------------------------
 export const register = async (req, res) => {
     try {
-        // for admin authentication
-        const { registerNo } = req.body;
-        const isAdminAccount = registerNo == "012345678910";
-        const isheadAccount = registerNo == "123123123123";
+        const { registerNo, email, password } = req.body;
+        const isAdminAccount = req.body.role;
 
-        req.body.role = isAdminAccount ? "admin" : isheadAccount ? "head" : "user";
+        // Check if a user with the provided registerNo or email already exists
+        const existingUser = await User.findOne({
+            $or: [{ registerNo }, { email }]
+        });
 
-        // for hassing the password
-        const hashedPassword = await hassPassword(req.body.password);
+        if (existingUser) {
+            return res.status(400).json({
+                msg: "User with this register number or email already exists",
+            });
+        }
+
+        // Set role based on admin or head account checks
+        // req.body.role = isAdminAccount ? "admin" : isheadAccount ? "head" : "user";
+
+        // Hash the password
+        const hashedPassword = await hassPassword(password);
         req.body.password = hashedPassword;
 
-        // to save the register credentials to the database
+        // Save the user to the database
         const user = await User.create(req.body);
-        res.status(StatusCodes.CREATED).json({ msg: "user created" });
+        res.status(201).json({ msg: "User created successfully" });
     } catch (error) {
-        res
-            .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
+
 
 
 // --------------------------- for user login ---------------------------------
@@ -52,7 +60,7 @@ export const login = async (req, res, next) => {
             expires: new Date(Date.now() + oneWeek),
             // secure: process.env.NODE_ENV === "production",
         });
-        res.status(StatusCodes.CREATED).json({ msg: 'user is logged in',token })
+        res.status(201).json({ msg: 'user is logged in', token })
     }
     catch (error) {
         next(error)
@@ -87,7 +95,7 @@ export const adminLogin = async (req, res, next) => {
         });
 
         // Respond with a success message
-        res.status(200).json({ msg: "User is logged in",token });
+        res.status(200).json({ msg: "User is logged in", token });
     } catch (error) {
         res.status(500).json({ msg: error.message });
     }
@@ -95,58 +103,58 @@ export const adminLogin = async (req, res, next) => {
 
 
 // ---------------------- for staff registration -------------------------------
-export const staffRegister = async (req, res) => {
-    try {
-        const {email} = req.body;
-        const isEmailExist = await staffModel.findOne({email});
-        if(isEmailExist){
-            return res.status(400).json({msg: 'Email already exist'})
-        }
-        // Hashing the password
-        const hashedPassword = await hassPassword(req.body.password);
-        req.body.password = hashedPassword;
+// export const staffRegister = async (req, res) => {
+//     try {
+//         const {email} = req.body;
+//         const isEmailExist = await staffModel.findOne({email});
+//         if(isEmailExist){
+//             return res.status(400).json({msg: 'Email already exist'})
+//         }
+//         // Hashing the password
+//         const hashedPassword = await hassPassword(req.body.password);
+//         req.body.password = hashedPassword;
 
-        // Save the staff credentials to the database
-        const staff = await staffModel.create(req.body);
-        res.status(200).json({ msg: "Staff account created successfully",staff });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+//         // Save the staff credentials to the database
+//         const staff = await staffModel.create(req.body);
+//         res.status(200).json({ msg: "Staff account created successfully",staff });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 
 // --------------------------- for staff login ---------------------------------
-export const staffLogin = async (req, res, next) => {
-    try {
-        const passKey = process.env.STAFF_PASS_KEY;
-        const { passkey } = req.body;
+// export const staffLogin = async (req, res, next) => {
+//     try {
+//         const passKey = process.env.STAFF_PASS_KEY;
+//         const { passkey } = req.body;
 
-        if (passkey !== passKey) {
-            return res.status(400).json({ msg: "Invalid Passkey" });
-        }
+//         if (passkey !== passKey) {
+//             return res.status(400).json({ msg: "Invalid Passkey" });
+//         }
 
-        const staff = await staffModel.findOne({ email: req.body.email });
-        const password = req.body.password;
+//         const staff = await staffModel.findOne({ email: req.body.email });
+//         const password = req.body.password;
 
-        const isValidUser = staff && (await comparePassword(password, staff.password));
-        if (!isValidUser) {
-            return res.status(400).json({ msg: "Invalid Credentials" });
-        }
+//         const isValidUser = staff && (await comparePassword(password, staff.password));
+//         if (!isValidUser) {
+//             return res.status(400).json({ msg: "Invalid Credentials" });
+//         }
 
-        const token = createJWT({ userId: staff._id, role: staff.role });
-        const oneWeek = 1000 * 60 * 60 * 24 * 7; // 1 week in milliseconds
+//         const token = createJWT({ userId: staff._id, role: staff.role });
+//         const oneWeek = 1000 * 60 * 60 * 24 * 7; // 1 week in milliseconds
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            expires: new Date(Date.now() + oneWeek),
-        });
+//         res.cookie("token", token, {
+//             httpOnly: true,
+//             expires: new Date(Date.now() + oneWeek),
+//         });
 
-        // Send token in response as well, allowing immediate access to it
-        res.status(200).json({ msg: 'User is logged in', token });
-    } catch (error) {
-        next(error);
-    }
-};
+//         // Send token in response as well, allowing immediate access to it
+//         res.status(200).json({ msg: 'User is logged in', token });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
 
 
 
@@ -156,6 +164,6 @@ export const logout = (req, res) => {
         httpOnly: true,
         expires: new Date(Date.now()),
     });
-    res.status(StatusCodes.OK).json({ msg: 'user logged out!' });
+    res.status(200).json({ msg: 'user logged out!' });
 };
 
