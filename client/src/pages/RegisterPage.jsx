@@ -31,13 +31,13 @@ export default function RegisterPage() {
         setShowPassword(!showPassword);
     };
 
-    const departments = ['CSE', 'ECE', 'EEE', 'MECH', 'AI'];
+    const departments = ['CSE', 'ECE', 'EEE', 'MECH', 'AI&DS','BME','CIVIL'];
 
     return (
         <div className="min-h-screen flex items-center justify-center  bg-[#D1D6FE]">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-96 transform transition-all duration-300 ease-in-out hover:scale-105">
                 <div className="flex justify-center mb-6">
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-full animate-pulse">
+                    <div className="bg-blue-500 p-3 rounded-full animate-pulse">
                         <UserPlus className="h-8 w-8 text-white" />
                     </div>
                 </div>
@@ -197,7 +197,7 @@ export default function RegisterPage() {
 
                     <button
                         type="submit"
-                        className="w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md shadow-md hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transform transition-all duration-300 ease-in-out hover:scale-105"
+                        className="w-full py-2 px-4 bg-blue-600 text-white rounded-md shadow-md hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transform transition-all duration-300 ease-in-out hover:scale-105"
                     >
                         Register
                         <ArrowRight className="inline-block ml-2" size={20} />

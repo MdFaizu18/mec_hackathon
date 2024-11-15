@@ -5,7 +5,6 @@ import customFetch from '../utils/CustomFetch';
 import { toast } from 'react-toastify';
 
 
-
 export default function LoginPage() {
     const [formData, setFormData] = useState({
         email: '',
@@ -36,7 +35,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-[#D1D6FE]">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-96 transform transition-all duration-300 ease-in-out hover:scale-105">
                 <div className="flex justify-center mb-6">
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-full animate-pulse">
+                    <div className="bg-blue-500 p-3 rounded-full animate-pulse">
                         <MessageSquare className="h-8 w-8 text-white" />
                     </div>
                 </div>
@@ -122,7 +121,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md shadow-md hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transform transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full py-2 px-4 bg-blue-600 text-white rounded-md shadow-md hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transform transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? (
                             <span className="flex items-center justify-center">
@@ -140,15 +139,14 @@ export default function LoginPage() {
                         )}
                     </button>
                 </Form>
-                <div className="mt-6 text-center" style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className="mt-6 text-center" style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <a href="/register" className="text-blue-600 hover:underline flex items-center justify-center">
                         <UserPlus className="mr-2" size={20} />
                         New user? Register
                     </a>
-                    {/* <a href="/redirect/forget-password" className="text-blue-600 hover:underline flex items-center justify-center">
-                        
-                        Forget Password
-                    </a> */}
+                    <a href="/" className="text-blue-600 hover:underline flex items-center justify-center">
+                        Back to home
+                    </a>
                 </div>
 
             </div>

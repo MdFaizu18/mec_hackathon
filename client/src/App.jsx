@@ -5,6 +5,13 @@ import HomeOutlet from './pages/HomeOutlet';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
+// action and loaders 
+import { action as loginAction } from './pages/LoginPage'
+import { action as registerAction } from './pages/RegisterPage'
+import StudentDashboard from './pages/StudentDashboard';
+import LandingPage from './pages/LandingPage';
+import StudentOutlet from './pages/StudentOutlet';
+
 
 // Define the router using createBrowserRouter
 const router = createBrowserRouter([
@@ -13,18 +20,31 @@ const router = createBrowserRouter([
     element: <HomeOutlet />,
     children: [
       {
+        index: true,
+        element: <LandingPage />,
+
+      },
+      {
         path: 'login',
         element: <LoginPage />,
+        action: loginAction
       },
       {
         path: 'register',
         element: <RegisterPage />,
+        action: registerAction
       },
-      // {
-      //   path: 'about',
-      //   element: <AboutPage />,
-      // },
     ],
+  },
+  {
+    path: 'student-dashboard',
+    element: <StudentOutlet />,
+    children: [
+      {
+        index: true,
+        element: <StudentDashboard />,
+      },
+    ]
   },
 ]);
 
